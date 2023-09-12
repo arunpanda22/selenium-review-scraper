@@ -1,0 +1,1 @@
+print("building new scraper for amazon reviews")
