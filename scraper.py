@@ -1,37 +1,10 @@
-import asyncio
-from pyppeteer import launch
+import requests
+from bs4 import BeautifulSoup
 
-async def scrape_amazon_reviews(i):
-    try:
-        browser = await launch(headless=False, defaultViewport=None)
-        page = await browser.newPage()
-        url = f'https://www.amazon.in/product-reviews/B09RG9WPTC/ref=cm_cr_getr_d_paging_btm_next_4?pageNumber={i}'
-        await page.goto(url)
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',}
+URL='https://www.amazon.in/product-reviews/B09RG9WPTC'
 
-        await page.waitForSelector('div[data-hook="review"]', timeout=5000)  # Wait for reviews to load
+response = requests.get(URL)
+print("response Status code: ", response.status_code)
 
-        reviewElements = await page.querySelectorAll('div[data-hook="review"]')
-        reviews = []
-
-        for element in reviewElements:
-            reviewText = await page.evaluate('(el) => el.textContent.trim()', element)
-            reviews.append({'reviewText': reviewText})
-
-        return reviews
-
-    except Exception as e:
-        print("Error:", e)
-    finally:
-        await browser.close()
-
-async def main():
-    reviews = []
-
-    for i in range(1, 6):
-        reviews_batch = await scrape_amazon_reviews(i)
-        reviews.extend(reviews_batch)
-
-    print('Scraped reviews:', reviews)
-
-if __name__ == '__main__':
-    asyncio.get_event_loop().run_until_complete(main())
+soup = BeautifulSoup(response.content, 'html.parser')
